@@ -153,7 +153,7 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
     dir_name = os.path.basename(sub_dir)
     if dir_name == image_dir:
       continue
-    tf.logging.info("Looking for images in '" + dir_name + "'")
+    # tf.logging.info("Looking for images in '" + dir_name + "'")
     for extension in extensions:
       file_glob = os.path.join(image_dir, dir_name, '*.' + extension)
       file_list.extend(gfile.Glob(file_glob))
@@ -190,7 +190,10 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
       percentage_hash = ((int(hash_name_hashed, 16) %
                           (MAX_NUM_IMAGES_PER_CLASS + 1)) *
                          (100.0 / MAX_NUM_IMAGES_PER_CLASS))
-      if percentage_hash < validation_percentage:
+      if len(validation_images) == 0:
+        tf.logging.warning('WARNING: No validation images for {}, appending {}.'.format(label_name, base_name))
+        validation_images.append(base_name)
+      elif percentage_hash < validation_percentage:
         validation_images.append(base_name)
       elif percentage_hash < (testing_percentage + validation_percentage):
         testing_images.append(base_name)
@@ -476,9 +479,11 @@ def cache_bottlenecks(sess, image_lists, image_dir, bottleneck_dir,
             resized_input_tensor, bottleneck_tensor, architecture)
 
         how_many_bottlenecks += 1
+        '''
         if how_many_bottlenecks % 100 == 0:
           tf.logging.info(
               str(how_many_bottlenecks) + ' bottleneck files created.')
+        '''
 
 
 def get_random_cached_bottlenecks(sess, image_lists, how_many, category,
